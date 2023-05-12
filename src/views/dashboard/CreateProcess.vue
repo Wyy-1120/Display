@@ -1,16 +1,9 @@
 <template>
   <div>
     <div class="block">
-      <el-timeline>
-        <el-timeline-item
-          v-for="(activity, index) in activities"
-          :key="index"
-          :icon="activity.icon"
-          :type="activity.type"
-          :color="activity.color"
-          :size="activity.size"
-          :timestamp="activity.timestamp"
-        >
+      <el-timeline :reverse="true">
+        <el-timeline-item v-for="(activity, index) in nums.activities" :key="index" :icon="activity.icon"
+          :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
           {{ activity.content }}
         </el-timeline-item>
       </el-timeline>
@@ -24,9 +17,16 @@ export default {
   name: "CreateProcess",
   data() {
     return {
-      activities: [],
-      // count: 1,
+      wsUrl: "ws://localhost:8089/websocket",
+      ws: null
+      // activities: [],
     };
+  },
+  created() {
+    this.createWebSocket();
+  },
+  beforeDestroy() {
+    this.closeWebSocket();
   },
   computed: {
     nums() {
@@ -34,102 +34,280 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["clear"]),
-  },
-  mounted() {
-    const ws = new WebSocket("ws://localhost:8089/websocket");
-    ws.onopen = () => {
-      console.log("connected");
-    };
-    ws.onmessage = (event) => {
-      const obj = JSON.parse(event.data);
-      const step = obj.step;
-      if (step === 1) {
-        this.activities.push({
-          content: obj.user + " 创建了任务 " + obj.task,
-          timestamp: obj.time,
-          size: "large",
-          type: "primary",
-          icon: "el-icon-more",
-        });
-        this.nums.info = [];
-        this.nums.info.push({
-          content: obj.user + " 创建了任务 " + obj.task,
-        });
-      } else if (step === 2) {
-        this.activities.push({
-          icon: "el-icon-edit",
-          type: "primary",
-          color: "green",
-          size: "large",
-          timestamp: obj.timeStamp,
-          content:
-            "任务将被放置到节点 " +
-            obj.node +
-            " , 分配的资源为cpu" +
-            obj.cpuSize +
-            "m, 内存" +
-            obj.memorySize +
-            "Mi.",
-        });
-        if(obj.node == "node1"){
-          this.nums.isNode1Visible = true;
+    createWebSocket() {
+      this.ws = new WebSocket(this.wsUrl);
+      this.ws.onopen = () => {
+        console.log("WebSocket connected.");
+      };
+      this.ws.onmessage = (event) => {
+        const obj = JSON.parse(event.data);
+        const step = obj.step;
+        //-----------------步骤0：初始化------------------
+        if (step === 0) {
+          this.nums.mastersNum = obj.mastersNum;
+          this.nums.nodesNum = obj.nodesNum;
+          this.nums.maxNum = this.nums.nodesNum > this.nums.carsNum ? this.nums.nodesNum : this.nums.carsNum;
+          this.nums.maxHeight = this.nums.compHeight * this.nums.maxNum;
         }
-        else if(obj.node == "node2"){
-          this.nums.isNode2Visible = true;
+        //-----------------步骤1：创建任务-----------------
+        else if (step === 1) {
+          this.nums.carsNum++;
+          this.nums.activities.push({
+            content: obj.user + " 创建了 " + obj.task + " 任务，任务编号为" + obj.requestId,
+            timestamp: obj.time,
+            size: "large",
+            type: "primary",
+            color: "black",
+            icon: "el-icon-more",
+          });
+          this.nums.color.push({ key: obj.requestId, value: "black" });
+          this.nums.info.push({ key: obj.requestId, value: obj.user + " 创建了 " + obj.task + " 任务，任务编号为" + obj.requestId });
         }
-        this.nums.info = [];
-        this.nums.info.push({
-          content:
-            "任务将被放置到节点 " +
-            obj.node +
-            " , 分配的资源为cpu" +
-            obj.cpuSize +
-            "m, 内存" +
-            obj.memorySize +
-            "Mi.",
-        });
-      } else if (step === 3) {
-        this.activities.push({
-          icon: "el-icon-view",
-          type: "primary",
-          color: "green",
-          size: "large",
-          timestamp: obj.timeStamp,
-          content: "放置成功, 应用地址为 https://" + obj.url,
-        });
-        if(obj.node == "node1"){
-          this.nums.node1Color = "green";
+        //-----------------步骤2：放置决策-----------------
+        else if (step === 2) {
+          this.nums.activities.push({
+            icon: "el-icon-edit",
+            type: "primary",
+            color: "blue",
+            size: "large",
+            timestamp: obj.timeStamp,
+            content:
+              "任务" + obj.requestId + "将被放置到节点 " +
+              obj.node +
+              " , 分配的资源为cpu" +
+              obj.cpuSize +
+              "m, 内存" +
+              obj.memorySize +
+              "Mi.",
+          });
+          this.nums.color = this.nums.color.map(item => {
+            if (item.key === obj.requestId) {
+              item.value = "blue";
+            }
+            return item;
+          });
+          this.nums.info = this.nums.info.map(item => {
+            if (item.key === obj.requestId) {
+              item.value = "任务" + obj.requestId + "将被放置到节点 " +
+                obj.node +
+                " , 分配的资源为cpu" +
+                obj.cpuSize +
+                "m, 内存" +
+                obj.memorySize +
+                "Mi.";
+            }
+            return item;
+          });
         }
-        else if(obj.node == "node2"){
-          this.nums.node2Color = "green";
+        //-----------------步骤3：放置成功-----------------
+        else if (step === 3) {
+          this.nums.activities.push({
+            icon: "el-icon-view",
+            type: "primary",
+            color: "green",
+            size: "large",
+            timestamp: obj.timeStamp,
+            content: "任务" + obj.requestId + "放置成功, 应用地址为 https://" + obj.url,
+          });
+          this.nums.color = this.nums.color.map(item => {
+            if (item.key === obj.requestId) {
+              item.value = "green";
+            }
+            return item;
+          });
+          this.nums.info = this.nums.info.map(item => {
+            if (item.key === obj.requestId) {
+              item.value = "任务" + obj.requestId + "放置成功, 应用地址为 https://" + obj.url;
+            }
+            return item;
+          });
+          const rightindex = this.nums.info.findIndex(item => item.key === obj.requestId);
+          let leftindex = -1;
+          if (obj.node === 'node1') {
+            leftindex = 0;
+          } else if (obj.node === "node2") {
+            leftindex = 1;
+          } else if (obj.node === "node3") {
+            leftindex = 2;
+          } else if (obj.node === "node4") {
+            leftindex = 3;
+          }
+          if (rightindex != -1 && leftindex != -1) {
+            this.nums.rightlines.push({
+              requestId: obj.requestId,
+              startX: this.nums.compWidth,
+              startY: this.nums.maxHeight / this.nums.carsNum / 2 * (rightindex * 2 + 1),
+              endX: 8,
+              endY: this.nums.maxHeight / this.nums.nodesNum / 2 * (leftindex * 2 + 1),
+              width: 3,
+              color: "green",
+              arrowhead: "url(#arrow2)",
+            });
+          }
+          // console.table(this.nums.rightlines)
         }
-        this.nums.infoColoe = "green";
-        this.nums.info = [];
-        this.nums.info.push({
-          content: "放置成功, 应用地址为 https://" + obj.url,
-        });
-      } else if (step === 4) {
-        this.activities.push({
-          type: "primary",
-          size: "large",
-          color: "red",
-          content: "----------------------------------------------------------",
-        });
-        // this.nums.info.pop();
-        this.nums.info = [];
-        this.nums.isNode1Visible = false;
-        this.nums.isNode2Visible = false;
-        this.nums.node1Color = "black";
-        this.nums.node2Color = "black";
-        this.nums.infoColoe = "black";
+        //-----------------步骤4：放置成功-----------------
+        else if (step === 4) {
+          const index = this.nums.info.findIndex(item => item.key === obj.requestId);
+          if (index > -1) {
+            this.nums.info.splice(index, 1);
+          }
+          this.nums.carsNum--;
+          const index2 = this.nums.rightlines.findIndex(line => line.requestId === obj.requestId);
+          if (index2 > -1) {
+            this.nums.rightlines = this.nums.rightlines.filter((_, i) => i !== index2);
+          }
+          console.table(this.nums.rightlines)
+        }
+
+      };
+      this.ws.onerror = (event) => {
+        console.error('WebSocket error:', event);
+      };
+      this.ws.onclose = () => {
+        console.log("disconnected");
+      };
+    },
+    closeWebSocket() {
+      if (this.ws != null) {
+        this.ws.close();
+        this.ws = null;
       }
-    };
-    ws.onclose = () => {
-      console.log("disconnected");
-      
-    };
+    },
   },
+  // mounted() {
+  //   // const ws = new WebSocket("ws://localhost:8089/websocket");
+  //   // ws.onopen = () => {
+  //   //   console.log("connected");
+  //   // };
+
+  //   // ws.onmessage = (event) => {
+  //   //   const obj = JSON.parse(event.data);
+  //   //   const step = obj.step;
+  //   //   //-----------------步骤0：初始化------------------
+  //   //   if (step === 0) {
+  //   //     this.nums.mastersNum = obj.mastersNum;
+  //   //     this.nums.nodesNum = obj.nodesNum;
+  //   //     this.nums.maxNum = this.nums.nodesNum > this.nums.carsNum ? this.nums.nodesNum : this.nums.carsNum;
+  //   //     this.nums.maxHeight = this.nums.compHeight * this.nums.maxNum;
+  //   //   }
+  //   //   //-----------------步骤1：创建任务-----------------
+  //   //   else if (step === 1) {
+  //   //     this.nums.carsNum++;
+  //   //     this.nums.activities.push({
+  //   //       content: obj.user + " 创建了 " + obj.task + " 任务，任务编号为" + obj.requestId,
+  //   //       timestamp: obj.time,
+  //   //       size: "large",
+  //   //       type: "primary",
+  //   //       color: "black",
+  //   //       icon: "el-icon-more",
+  //   //     });
+  //   //     this.nums.color.push({ key: obj.requestId, value: "black" });
+  //   //     this.nums.info.push({ key: obj.requestId, value: obj.user + " 创建了 " + obj.task + " 任务，任务编号为" + obj.requestId });
+  //   //   }
+  //   //   //-----------------步骤2：放置决策-----------------
+  //   //   else if (step === 2) {
+  //   //     this.nums.activities.push({
+  //   //       icon: "el-icon-edit",
+  //   //       type: "primary",
+  //   //       color: "blue",
+  //   //       size: "large",
+  //   //       timestamp: obj.timeStamp,
+  //   //       content:
+  //   //         "任务" + obj.requestId + "将被放置到节点 " +
+  //   //         obj.node +
+  //   //         " , 分配的资源为cpu" +
+  //   //         obj.cpuSize +
+  //   //         "m, 内存" +
+  //   //         obj.memorySize +
+  //   //         "Mi.",
+  //   //     });
+  //   //     this.nums.color = this.nums.color.map(item => {
+  //   //       if (item.key === obj.requestId) {
+  //   //         item.value = "blue";
+  //   //       }
+  //   //       return item;
+  //   //     });
+  //   //     this.nums.info = this.nums.info.map(item => {
+  //   //       if (item.key === obj.requestId) {
+  //   //         item.value = "任务" + obj.requestId + "将被放置到节点 " +
+  //   //           obj.node +
+  //   //           " , 分配的资源为cpu" +
+  //   //           obj.cpuSize +
+  //   //           "m, 内存" +
+  //   //           obj.memorySize +
+  //   //           "Mi.";
+  //   //       }
+  //   //       return item;
+  //   //     });
+  //   //   }
+  //   //   //-----------------步骤3：放置成功-----------------
+  //   //   else if (step === 3) {
+  //   //     this.nums.activities.push({
+  //   //       icon: "el-icon-view",
+  //   //       type: "primary",
+  //   //       color: "green",
+  //   //       size: "large",
+  //   //       timestamp: obj.timeStamp,
+  //   //       content: "任务" + obj.requestId + "放置成功, 应用地址为 https://" + obj.url,
+  //   //     });
+  //   //     this.nums.color = this.nums.color.map(item => {
+  //   //       if (item.key === obj.requestId) {
+  //   //         item.value = "green";
+  //   //       }
+  //   //       return item;
+  //   //     });
+  //   //     this.nums.info = this.nums.info.map(item => {
+  //   //       if (item.key === obj.requestId) {
+  //   //         item.value = "任务" + obj.requestId + "放置成功, 应用地址为 https://" + obj.url;
+  //   //       }
+  //   //       return item;
+  //   //     });
+  //   //     const rightindex = this.nums.info.findIndex(item => item.key === obj.requestId);
+  //   //     let leftindex = -1;
+  //   //     if (obj.node === 'node1') {
+  //   //       leftindex = 0;
+  //   //     } else if (obj.node === "node2") {
+  //   //       leftindex = 1;
+  //   //     } else if (obj.node === "node3") {
+  //   //       leftindex = 2;
+  //   //     } else if (obj.node === "node4") {
+  //   //       leftindex = 3;
+  //   //     }
+  //   //     if (rightindex != -1 && leftindex != -1) {
+  //   //       this.nums.rightlines.push({
+  //   //         requestId: obj.requestId,
+  //   //         startX: this.nums.compWidth,
+  //   //         startY: this.nums.maxHeight / this.nums.carsNum / 2 * (rightindex * 2 + 1),
+  //   //         endX: 8,
+  //   //         endY: this.nums.maxHeight / this.nums.nodesNum / 2 * (leftindex * 2 + 1),
+  //   //         width: 3,
+  //   //         color: "green",
+  //   //         arrowhead: "url(#arrow2)",
+  //   //       });
+  //   //     }
+  //   //     // console.table(this.nums.rightlines)
+  //   //   }
+  //   //   //-----------------步骤4：放置成功-----------------
+  //   //   else if (step === 4) {
+  //   //     const index = this.nums.info.findIndex(item => item.key === obj.requestId);
+  //   //     if (index > -1) {
+  //   //       this.nums.info.splice(index, 1);
+  //   //     }
+  //   //     this.nums.carsNum--;
+  //   //     const index2 = this.nums.rightlines.findIndex(line => line.requestId === obj.requestId);
+  //   //     if (index2 > -1) {
+  //   //       this.nums.rightlines = this.nums.rightlines.filter((_, i) => i !== index2);
+  //   //     }
+  //   //     console.table(this.nums.rightlines)
+  //   //   }
+
+  //   // };
+
+  //   // ws.onclose = () => {
+  //   //   console.log("disconnected");
+  //   // };
+  // },
 };
 </script>
 
@@ -139,7 +317,4 @@ export default {
   margin: 0 auto;
   padding: 20px;
 }
-/* .el-timeline-item {
-  line-height:  0vh;
-} */
 </style>

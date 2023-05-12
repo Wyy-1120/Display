@@ -1,73 +1,61 @@
 <template>
-    <div>
-      <!-- <div>
-        <Node v-for="node in nodes" :key="node.id" :id="node.id"></Node>
-        <i v-for="node in nodes" :key="node.id" class="el-icon-monitor">  node{{id}}</i>
-      </div> -->
-      <div class="ima" v-for="num in nums.tasks" :key="num.id">
-        <i class="el-icon-truck" style="font-size: 50px"></i>
-        <i
-          class="el-icon-minus"
-          style="font-size: 50px"
-          v-for="num in minusNums"
-          :key="num.id"
-        ></i>
-        <i
-          class="el-icon-right"
-          style="font-size: 50px"
-          v-for="num in rightNums"
-          :key="num.id"
-        ></i>
-        <i class="el-icon-s-platform" style="font-size: 50px"></i>
-        <span class="info" style="font-size: 20px" mar
-          >任务放置成功！</span
-        >
-      </div>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "Structimage",
-    data: function () {
-      return {
-        //   nums: [],
-        minusNums: [{ id: 1 }, { id: 2 }, { id: 3 }],
-        rightNums: [{ id: 1 }],
-      };
+  <div>
+    <svg width="400" height="400">
+      <defs>
+          <marker
+            id="arrow1"
+            viewBox="0 0 10 10"
+            refX="5"
+            refY="5"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" />
+          </marker>
+        </defs>
+      <line v-for="(line, index) in lines" :key="index" :x1="line.startX" :y1="line.startY" :x2="line.endX" :y2="line.endY" :stroke-width="line.width" :stroke="line.color" :marker-end="line.arrowhead" />
+    </svg>
+    <button @click="addArrowheadLine">Add Arrowhead Line</button>
+    <button @click="removeLastLine">Remove Last Line</button>
+    <button @click="customizeLine(0)">Customize First Line</button>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      lines: []
+    };
+  },
+  methods: {
+    addArrowheadLine() {
+      this.lines.push({
+        startX: 100,
+        startY: 100,
+        endX: 300,
+        endY: 300,
+        color: "black",
+        width: 2,
+        arrowhead: "url(#arrow1)"
+      });
     },
-    computed: {
-      nums() {
-        return this.$store.state.nums;
-      },
+    removeLastLine() {
+      this.lines.pop();
     },
-  };
-  </script>
-  
-  <style>
-  /* .worker{
-      font-size: 40px;
-      float: left;
+    customizeLine(index) {
+      this.lines[index].startX = 50;
+      this.lines[index].startY = 200;
+      this.lines[index].endX = 350;
+      this.lines[index].endY = 200;
+      this.lines[index].color = "red";
+      this.lines[index].width = 4;
+    }
   }
-  .master{
-      font-size: 50px;
-      float: left;
-  } */
-  .info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .el-icon-monitor {
-    font-size: 35px;
-  }
-  .el-icon-s-platform {
-    font-size: 35px;
-  }
-  .ima {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 220px;
-  }
-  </style>
+};
+</script>
+
+<style>
+
+</style>

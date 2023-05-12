@@ -1,20 +1,22 @@
 <template>
   <div>
-    <div class="tubiao">
-      <i class="el-icon-s-platform" style="float: center"></i>
+    <div class="mastertubiao">
+      <i class="el-icon-s-platform"></i>
     </div>
     <div>
-      <span class="mas">master</span>
+      <span class="mastermas">master{{ id }}</span>
     </div>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  props: ["id"],
+};
 </script>
 
 <style>
-.tubiao {
+.mastertubiao {
   display: flex; /*设置flex布局*/
   align-items: center; /*垂直居中*/
   justify-content: center; /*水平居中*/
@@ -22,7 +24,7 @@ export default {};
 .el-icon-s-platform {
   font-size: 80px;
 }
-.mas {
+.mastermas {
   display: flex; /*设置flex布局*/
   align-items: center; /*垂直居中*/
   justify-content: center; /*水平居中*/

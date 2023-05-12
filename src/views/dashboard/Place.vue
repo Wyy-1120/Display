@@ -3,6 +3,7 @@
     <el-aside style="width:70%;">
       <el-header>任务放置视图</el-header>
       <structimage></structimage>
+      <!-- <tmp></tmp> -->
     </el-aside>
     <el-main>
       <el-header>时间线</el-header>
@@ -14,10 +15,12 @@
 <script>
 import Structimage from "./Structimage.vue";
 import CreateProcess from "./CreateProcess.vue";
+import Tmp from "./Tmp.vue";
 export default {
   components: {
     Structimage,
     CreateProcess,
+    Tmp
   },
 };
 </script>

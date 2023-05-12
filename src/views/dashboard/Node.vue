@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div class="tubiao">
-      <i class="el-icon-monitor" style="float: center"></i>
+    <div class="nodetubiao">
+      <i class="el-icon-monitor"></i>
     </div>
     <div>
-      <span class="mas">node{{ id }}</span>
+      <span class="nodemas">node{{ id }}</span>
     </div>
   </div>
 </template>
@@ -16,7 +16,7 @@ export default {
 </script>
 
 <style>
-.tubiao {
+.nodetubiao {
   display: flex; /*设置flex布局*/
   align-items: center; /*垂直居中*/
   justify-content: center; /*水平居中*/
@@ -24,7 +24,7 @@ export default {
 .el-icon-monitor {
   font-size: 50px;
 }
-.mas {
+.nodemas {
   display: flex; /*设置flex布局*/
   align-items: center; /*垂直居中*/
   justify-content: center; /*水平居中*/
