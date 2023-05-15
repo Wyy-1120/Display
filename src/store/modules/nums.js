@@ -3,7 +3,7 @@ const state = {
     count: 0,
     info: [],
     color: [],
-    mastersNum: 1,      //master结点数量
+    mastersNum: 0,      //master结点数量
     nodesNum: 0,        //node结点数量
     carsNum: 0,         //车辆数量
     maxNum: 0,          //最大数量

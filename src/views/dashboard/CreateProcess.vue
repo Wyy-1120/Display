@@ -22,7 +22,7 @@ export default {
       // activities: [],
     };
   },
-  created() {
+  mounted() {
     this.createWebSocket();
   },
   beforeDestroy() {
