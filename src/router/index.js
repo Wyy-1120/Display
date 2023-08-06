@@ -55,40 +55,76 @@ export const constantRoutes = [
     }]
   },
 
+  {
+    path: '/monitor',
+    component: Layout,
+    redirect: '/monitor/cpu',
+    name: 'monitor',
+    meta: { title: '监控', icon: 'el-icon-s-help' },
+    children: [
+      // {
+      //   path: 'cpu',
+      //   name: 'cpu',
+      //   component: () => import('@/views/cpu/index'),
+      //   meta: { title: 'cpu使用情况', icon: 'table' }
+      // },
+      // {
+      //   path: 'memory',
+      //   name: 'memory',
+      //   component: () => import('@/views/memory/index'),
+      //   meta: { title: '内存使用情况', icon: 'tree' }
+      // },
+      {
+        path: 'node',
+        name: 'node',
+        component: () => import('@/views/monitor/node/index'),
+        meta: { title: '结点资源使用情况', icon: 'tree' }
+      },
+      {
+        path: 'pod',
+        name: 'pod',
+        component: () => import('@/views/monitor/pod/index'),
+        meta: { title: 'pod资源使用情况', icon: 'tree' }
+      }
+    ]
+  },
+
+
   // {
-  //   path: '/example',
+  //   path: '/monitor',
   //   component: Layout,
-  //   redirect: '/example/table',
+  //   redirect: '/monitor/cpu',
   //   name: 'Example',
-  //   meta: { title: 'Example', icon: 'el-icon-s-help' },
+  //   meta: { title: '资源监控', icon: 'el-icon-s-help' },
   //   children: [
   //     {
-  //       path: 'table',
+  //       path: 'cpu',
   //       name: 'Table',
-  //       component: () => import('@/views/table/index'),
-  //       meta: { title: 'Table', icon: 'table' }
+  //       component: () => import('@/views/cpu/index'),
+  //       meta: { title: 'cpu使用情况', icon: 'table' }
   //     },
   //     {
-  //       path: 'tree',
+  //       path: 'memory',
   //       name: 'Tree',
-  //       component: () => import('@/views/tree/index'),
-  //       meta: { title: 'Tree', icon: 'tree' }
+  //       component: () => import('@/views/memory/index'),
+  //       meta: { title: '内存使用情况', icon: 'tree' }
   //     }
   //   ]
   // },
 
-  {
-    path: '/form',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: '监控', icon: 'form' }
-      }
-    ]
-  },
+
+  // {
+  //   path: '/monitor',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'monitor',
+  //       component: () => import('@/views/monitor/index'),
+  //       meta: { title: '监控', icon: 'form' }
+  //     }
+  //   ]
+  // },
 
   // {
   //   path: '/nested',

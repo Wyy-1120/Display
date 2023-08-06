@@ -79,6 +79,18 @@ module.exports = {
         symbolId: 'icon-[name]'
       })
       .end()
+    // config.module
+    //   .rule('babel')
+    //   .test(/\.js$/)
+    //   .exclude
+    //   .add(file => (
+    //     /node_modules/.test(file) &&
+    //     !/\.vue\.js/.test(file)
+    //   ))
+    //   .end()
+    //   .use('babel-loader')
+    //   .loader('babel-loader')
+    //   .end();
 
     config
       .when(process.env.NODE_ENV !== 'development',
@@ -87,7 +99,7 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
+              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()

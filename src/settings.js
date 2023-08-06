@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'Vue Admin Template',
+  title: '分层边缘计算动态调度系统',
 
   /**
    * @type {boolean} true | false
